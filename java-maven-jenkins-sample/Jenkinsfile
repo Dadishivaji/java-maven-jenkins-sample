@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn -B clean compile'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn -B test'
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn -B package'
+            }
+        }
+
+        stage('Generate HTML') {
+            steps {
+                sh 'java -jar target/java-maven-jenkins-sample-1.0.0.jar'
+            }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'target/*.jar,target/site/index.html', fingerprint: true
+            echo 'Pipeline completed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed. Review the stage logs above.'
+        }
+        always {
+            echo 'Pipeline finished.'
+        }
+    }
+}
