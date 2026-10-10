@@ -17,7 +17,9 @@ pipeline {
         stage('Build') {
             steps {
                 dir('java-maven-jenkins-sample') {
-                    sh 'mvn -B clean compile'
+                    sh 'java -version'
+                    sh 'mvn -version'
+                     sh 'mvn -B clean compile'
                 }
             }
         }
